@@ -74,12 +74,13 @@ class SBERTTrainer:
 
 # Example usage
 dataset_path = r"C:\Users\doren\AppData\Roaming\Gantrithor\data\datasets\sbert_dataset_saimese_encoder"
+output_path = r"C:\Users\doren\AppData\Roaming\Gantrithor\data\sentence_encoders\sentiment_encoder_128"
 
 trainer = SBERTTrainer(dataset_directory=dataset_path,
-                       batch_size=32,
-                       epochs=3,
+                       batch_size=8,
+                       epochs=2,
                        evaluation_steps=1000,
-                       output_path='output/sbert_model',
-                       max_seq_length=256,
+                       output_path=output_path,
+                       max_seq_length=128,
                        dense_out_features=256)
 trainer.train()
