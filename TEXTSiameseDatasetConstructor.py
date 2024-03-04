@@ -4,7 +4,7 @@ import random
 from typing import List, Tuple
 
 import pandas as pd
-from datasets import load_from_disk, Dataset
+from datasets import load_from_disk, Dataset, DatasetDict
 from datasets import ClassLabel
 
 class TEXTSiameseDataSetConstructor():
@@ -243,6 +243,20 @@ class TEXTSiameseDataSetConstructor():
             self.label2id = {v: k for k, v in self.id2label.items()}
         else:
             raise ValueError("Label feature is not a ClassLabel type.")
+
+    def create_splits(self, dataset, train_size=0.8, val_size=0.1, test_size=0.1):
+        assert train_size + val_size + test_size == 1, "Splits must sum to 1"
+
+        train_test_split = dataset.train_test_split(test_size=test_size + val_size)
+        test_val_split = train_test_split['test'].train_test_split(test_size=test_size / (test_size + val_size))
+
+        dataset_splits = DatasetDict({
+            'train': train_test_split['train'],
+            'validation': test_val_split['train'],
+            'test': test_val_split['test']
+        })
+
+        return dataset_splits
 
 
 
