@@ -24,10 +24,16 @@ class InputExampleDataset(Dataset):
 class SBERTTrainer:
     """
     We may eventually want the dataset size to be streamed (load up a parametrized slice of it).
+    potential model_names and their training speeds and model size:
+
+
+    1 microsoft/mpnet-base    ~5 it/s
+    2 prajjwal1/bert-tiny     ~ 62 it/s
+    3 google/mobilebert-uncased 4 it/s
 
     """
 
-    def __init__(self, dataset_directory, model_name='microsoft/mpnet-base', batch_size=32, epochs=2, evaluation_steps=1000,
+    def __init__(self, dataset_directory, model_name='prajjwal1/bert-tiny', batch_size=32, epochs=2, evaluation_steps=1000,
                  output_path='output/sbert_model', max_seq_length=128, dense_out_features=256):
         self.dataset_directory = dataset_directory
         self.model_name = model_name
@@ -88,16 +94,16 @@ class SBERTTrainer:
 # Example usage
 dataset_path = r"C:\Users\doren\AppData\Roaming\Gantrithor\data\datasets\sbert_dataset_saimese_encoder"
 
-output_path = r"C:\Users\doren\AppData\Roaming\Gantrithor\data\sentence_encoders\sentiment_encoder_128"
+output_path = r"C:\Users\doren\AppData\Roaming\Gantrithor\data\sentence_encoders\sentiment_encoder_128_256"
 output_path_512 = r"C:\Users\doren\AppData\Roaming\Gantrithor\data\sentence_encoders\sentiment_encoder_512"
 output_path_64 = r"C:\Users\doren\AppData\Roaming\Gantrithor\data\sentence_encoders\sentiment_encoder_64"
 output_path_32 = r"C:\Users\doren\AppData\Roaming\Gantrithor\data\sentence_encoders\sentiment_encoder_32"
 
 
 trainer = SBERTTrainer(dataset_directory=dataset_path,
-                       batch_size=8,
+                       batch_size=128,
                        epochs=1,
-                       evaluation_steps=1000,
+                       evaluation_steps=2000,
                        output_path=output_path,
                        max_seq_length=128,
                        dense_out_features=256)

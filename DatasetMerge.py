@@ -8,7 +8,21 @@ from datasets import Features, ClassLabel, Sequence, Value
 
 class DatasetMerge:
     """
+    We must improve this by making it work for sequence classification, or text classification,
+    as well as the current named entity recognition.
 
+    We also provide a format that the datasets must be passed in as.
+
+    These features here are NER.
+    In general, the goal here is to come up with a method that
+    accepts certain sets of Features, and then merges the datasets
+    based off of those features we find.
+
+    features = Features({
+        "tokens": Sequence(feature=Value(dtype="string")),
+        "ner_tags": Sequence(feature=ClassLabel(names=self.all_labels)),
+        "document_id": Value(dtype="int32")
+    })
 
 
     """
@@ -199,7 +213,7 @@ dataset_two = load_from_disk("C:/Users/doren/AppData/Roaming/Gantrithor/data/dat
 # Create a list of the datasets
 datasets = [dataset_one, dataset_two]
 
-save_merge_dataset_path = r"C:/Users/doren/AppData/Roaming/Gantrithor/data/datasets/saved_dataset_merge"
+save_merge_dataset_path = r"C:/Users/doren/AppData/Roaming/Gantrithor/data/datasets/"
 
 # Create an instance of the DatasetMerge class
 merger = DatasetMerge(datasets, save_merge_dataset_path)
