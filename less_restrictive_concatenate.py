@@ -1,6 +1,23 @@
 from datasets import Dataset, Features, Sequence, Value, ClassLabel
 import pandas as pd
+import itertools
 
+def are_datasets_compatible(dataset1, dataset2):
+    if len(dataset1.features) != len(dataset2.features):
+        return False
+    for feature_value in dataset1.features.values():
+        compatible_feature_found = False
+        for other_feature in dataset2.features.values():
+            if isinstance(feature_value, Sequence) and isinstance(feature_value.feature, ClassLabel) and \
+                    isinstance(other_feature, Sequence) and isinstance(other_feature.feature, ClassLabel):
+                compatible_feature_found = True
+                break
+            elif type(feature_value) == type(other_feature):
+                compatible_feature_found = True
+                break
+        if not compatible_feature_found:
+            return False
+    return True
 
 def merge_dataset_test(datasets):
     """
@@ -62,38 +79,33 @@ def merge_dataset_test(datasets):
 
     """
 
-    valid_datasets = []
-    for i, dataset in enumerate(datasets):
-        is_valid = True
-        for other_dataset in datasets:
-            if dataset == other_dataset:
-                continue
-            if len(dataset.features) != len(other_dataset.features):
-                is_valid = False
-                print(f"Dataset {i} is invalid: Number of features does not match.")
-                break
-            for feature_value in dataset.features.values():
-                compatible_feature_found = False
-                for other_feature in other_dataset.features.values():
-                    if isinstance(feature_value, Sequence) and isinstance(feature_value.feature, ClassLabel) and \
-                            isinstance(other_feature, Sequence) and isinstance(other_feature.feature, ClassLabel):
-                        compatible_feature_found = True
-                        break
-                    elif type(feature_value) == type(other_feature):
-                        compatible_feature_found = True
-                        break
-                if not compatible_feature_found:
-                    is_valid = False
-                    print(f"Dataset {i} is invalid: Feature of type {type(feature_value)} is not compatible.")
-                    break
-            if not is_valid:
-                break
-        if is_valid:
-            valid_datasets.append(dataset)
-            print(f"Dataset {i} is valid.")
-        else:
-            print(f"Dataset {i} is invalid.")
-    return valid_datasets
+    num_datasets = len(datasets)
+    compatibility_matrix = [[False] * num_datasets for _ in range(num_datasets)]
+
+    for i, j in itertools.combinations(range(num_datasets), 2):
+        dataset1, dataset2 = datasets[i], datasets[j]
+        if are_datasets_compatible(dataset1[0], dataset2[0]):
+            compatibility_matrix[i][j] = True
+            compatibility_matrix[j][i] = True
+
+    equivalence_classes = []
+    visited = [False] * num_datasets
+
+    for i in range(num_datasets):
+        if not visited[i]:
+            equivalence_class = [datasets[i]]
+            visited[i] = True
+            for j in range(i + 1, num_datasets):
+                if compatibility_matrix[i][j]:
+                    equivalence_class.append(datasets[j])
+                    visited[j] = True
+            equivalence_classes.append(equivalence_class)
+
+    print(f"Equivalence classes of compatible datasets:")
+    for i, equivalence_class in enumerate(equivalence_classes):
+        print(f"Class {i + 1}: {[dataset[1] for dataset in equivalence_class]}")
+
+    return equivalence_classes
 
 
 # Test the function
@@ -139,10 +151,10 @@ if __name__ == "__main__":
         "index": [1, 2]
     }
 
-    mixed_dataset = Dataset.from_dict(mixed_data, features=mixed_features)
-    single_feature_dataset = Dataset.from_dict(single_feature_data, features=single_feature_features)
-    different_dataset = Dataset.from_dict(different_data, features=different_features)
-    same_dataset = Dataset.from_dict(same_data, features=same_features)
+    mixed_dataset = (Dataset.from_dict(mixed_data, features=mixed_features), "mixed_dataset")
+    single_feature_dataset = (Dataset.from_dict(single_feature_data, features=single_feature_features), "single_feature_dataset")
+    different_dataset = (Dataset.from_dict(different_data, features=different_features), "different_dataset")
+    same_dataset = (Dataset.from_dict(same_data, features=same_features), "same_dataset")
 
-    valid_datasets = merge_dataset_test([mixed_dataset, same_dataset])
-    print(f"Number of valid datasets: {len(valid_datasets)}")
+    equivalence_classes = merge_dataset_test([mixed_dataset, same_dataset, single_feature_dataset, different_dataset])
+    print(f"Number of equivalence classes: {len(equivalence_classes)}")
